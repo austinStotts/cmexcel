@@ -1,5 +1,6 @@
 const reader = require('xlsx');
 const file = reader.readFile('./test.xlsm');
+const fs = require("fs");
 
 let read = (cell) => {
     let value;
@@ -18,7 +19,7 @@ let read = (cell) => {
 }
 
   
-let data = [];
+let sheetdata = [];
   
 let sheets = []
 file.SheetNames.forEach(sn => {
@@ -31,7 +32,7 @@ console.log(sheets);
 
 for(let i = 0; i < sheets.length; i++) {
     let s = file.Sheets[sheets[i]];
-    data.push({
+    sheetdata.push({
         MATERIAL: read(s["K15"]),
         FAB_LABOR: read(s["K16"]),
         FAB_FRINGE: read(s["K17"]),
@@ -48,17 +49,34 @@ for(let i = 0; i < sheets.length; i++) {
         PM: read(s["K28"]),
         FEE: read(s["K30"]),
         TOTAL: read(s["K31"]),
-        TS_DATA: {
-            PROJECT: read(s["L2"]),
-            MATERIAL: read(s["L3"]),
-            WASTE: read(s["D6"]),
-            SLAB_WIDTH: read(s["E6"]),
-            SLAB_HEIGHT: read(s["F6"]),
-            MATERIAL_SQFT_COST: read(s["H6"]),
-            SQFT: read(s["O6"]),
-            LABOR: read(s["Q6"]),
-        }
+        // TS_DATA: {
+        //     PROJECT: read(s["L2"]),
+        //     MATERIAL: read(s["L3"]),
+        //     WASTE: read(s["D6"]),
+        //     SLAB_WIDTH: read(s["E6"]),
+        //     SLAB_HEIGHT: read(s["F6"]),
+        //     MATERIAL_SQFT_COST: read(s["H6"]),
+        //     SQFT: read(s["O6"]),
+        //     LABOR: read(s["Q6"]),
+        // }
     })
 }
 
-console.log(data)
+let formatCSV = (data) => {
+    let rows = [];
+    rows.push(`${Object.keys(data[0]).join(",")}`);
+    data.forEach(row => {
+        rows.push(Object.keys(row).map(k => row[k]).join(","));
+    })
+    rows = rows.join("\n");
+    return rows;
+}
+
+fs.writeFile("./test.csv", formatCSV(sheetdata), (error, res) => {
+    if(error) {
+        console.log(error);
+    } else {
+        console.log("file saved");
+    }
+});
+// console.log(sheetdata)
